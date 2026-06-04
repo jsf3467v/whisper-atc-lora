@@ -1,6 +1,6 @@
 """Evaluation
 
-Reads predictions/<tag>/<split>.jsonl, scores each source through the shared
+Reads predictions/<split>-<tag>.jsonl, scores each source through the shared
 scoring module, and prints the table with callsign recall and precision first,
 then exact-match, coverage, and WER. In-domain is shown by source, overall, and
 leak-free (utterances whose transcript also appears in training are dropped, since
@@ -29,7 +29,7 @@ HEADS = ("recall", "prec", "exact", "cov", "wer")
 
 
 def records(split, tag):
-    path = root / "predictions" / tag / f"{split}.jsonl"
+    path = root / "predictions" / f"{split}-{tag}.jsonl"
     with path.open() as f:
         return [json.loads(line) for line in f if line.strip()]
 

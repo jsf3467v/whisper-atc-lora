@@ -1,22 +1,19 @@
 """Transcribe audio with a Whisper model and save hypotheses for evaluation.
 
-Inference only. Works for the zero-shot baseline and, unchanged, for a fine-tuned checkpoint
-later with pass a different model id and tag.
+Inference only. Works for the zero-shot baseline and, unchanged, for a fine-tuned
+checkpoint by passing a different model id and tag.
 
-Predictions land in <project>/predictions/<tag>/<split>.jsonl, one record per
-utterance: index, source, reference text, hypothesis.
+Predictions land in <project>/predictions/<split>-<tag>.jsonl, one record per
+utterance: index, source, reference text, hypothesis. The tag in the filename
+keeps every model's output distinct in a single folder.
 """
 from __future__ import annotations
 
-import io
 import json
-import math
 from pathlib import Path
 import sys
 
-import soundfile as sf
 import torch
-from scipy.signal import resample_poly
 from transformers import WhisperProcessor, WhisperForConditionalGeneration
 from datasets import Audio
 
@@ -27,8 +24,7 @@ if root is None:
 sys.path.insert(0, str(root / "Datasets"))
 
 from data import corpora
-
-TARGET_SR = 16_000
+from audio import waveform, TARGET_SR
 
 
 def device():
@@ -43,17 +39,6 @@ def whisper(model_id, dev):
     processor = WhisperProcessor.from_pretrained(model_id)
     model = WhisperForConditionalGeneration.from_pretrained(model_id).to(dev).eval()
     return model, processor
-
-
-def waveform(item):
-    src = io.BytesIO(item["bytes"]) if item.get("bytes") else item["path"]
-    audio, sr = sf.read(src, dtype="float32")
-    if audio.ndim > 1:
-        audio = audio.mean(axis=1)
-    if sr != TARGET_SR:
-        g = math.gcd(sr, TARGET_SR)
-        audio = resample_poly(audio, TARGET_SR // g, sr // g)
-    return audio.astype("float32")
 
 
 def transcripts(model, processor, arrays, dev):
@@ -73,7 +58,7 @@ def completed(path):
 
 
 def hypotheses(split, name, model, processor, dev, tag, batch=16):
-    out_path = root / "predictions" / tag / f"{name}.jsonl"
+    out_path = root / "predictions" / f"{name}-{tag}.jsonl"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     raw = split.cast_column("audio", Audio(decode=False))
     refs, sources = raw["text_raw"], raw["source"]
