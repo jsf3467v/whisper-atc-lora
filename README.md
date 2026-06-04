@@ -99,6 +99,7 @@ in-domain, and OOD results. In-domain leakage is explicitly verified, while OOD 
 ATC/
 ├── Datasets/
 │   ├── data.py            # unify the three corpora into one DatasetDict (+ resume snapshot)
+│   ├── audio.py           # shared soundfile/scipy decoder, reused by every stage (no torch)
 │   ├── normalize.py       # shared text normalizer (refs and hyps)
 │   └── inspect_data.py    # data inventory / sanity checks
 ├── EDA/
@@ -111,11 +112,11 @@ ATC/
 │   ├── scoring.py         # WER + callsign metrics (the shared scorer)
 │   └── evaluate.py        # read predictions, print the before/after table
 ├── models/whisper-small-lora/   # exported fine-tuned model
-├── predictions/<tag>/           # saved hypotheses per model
+├── predictions/                 # saved hypotheses, one <split>-<tag>.jsonl per model
 ├── checkpoints/                 # training checkpoints (resumable)
+├── requirements.txt             # pinned dependencies (install with pip install -r)
 ├── References / Results / Papers
 ```
-
 
 
 ---
@@ -123,7 +124,7 @@ ATC/
 ## Setup
 
 ```bash
-pip install datasets soundfile scipy jiwer torch transformers peft
+pip install -r requirements.txt
 ```
 
 Notes:
