@@ -1,0 +1,26 @@
+# Compiled Python (regenerated automatically; never commit)
+__pycache__/
+*.py[cod]
+
+# Large model + training artifacts (>100MB, regenerable; UWB-ATCC license is non-commercial)
+models/
+checkpoints/
+
+# Runtime data cache and processed snapshot (downloaded/built locally)
+Datasets/cache/
+Datasets/processed/
+
+# Generated outputs (regenerable; contain dataset-derived text/audio, do not redistribute)
+predictions/
+sample_audio/
+SRC/transcripts.jsonl
+
+# Personal notes and copyrighted material kept out of the public repo
+considerations.rtf
+References.rtf
+Results.rtf
+Papers/
+
+# macOS
+.DS_Store
+.idea/

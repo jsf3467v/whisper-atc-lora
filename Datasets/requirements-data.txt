@@ -1,0 +1,6 @@
+# Data stage only. Apple Silicon (M-series) friendly — no CUDA needed here.
+datasets>=2.19,<3.0
+soundfile>=0.12        # libsndfile-backed audio decoding used by `datasets`
+librosa>=0.10          # resampling fallback / quick audio stats
+jiwer>=3.0             # WER (used from Week 3, harmless to install now)
+tqdm>=4.66
