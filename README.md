@@ -9,6 +9,9 @@ baseline, parameter-efficient fine-tuning, and leak-checked evaluation. The resu
 All training and inference run locally on Apple Silicon (M4 MAX, MPS); the code is
 device-agnostic and runs unchanged on CUDA.
 
+**[Try the live demo](https://huggingface.co/spaces/jsf3467v/atc-audio-to-text)** — upload or
+record an ATC clip and read back the transcript with its extracted callsign.
+
 ---
 
 ## Results
@@ -99,7 +102,7 @@ in-domain, and OOD results. In-domain leakage is explicitly verified, while OOD 
 ATC/
 ├── Datasets/
 │   ├── data.py            # unify the three corpora into one DatasetDict (+ resume snapshot)
-│   ├── audio.py           # shared soundfile/scipy decoder, reused by every stage (no torch)
+│   ├── audio.py           # shared soundfile/scipy decoder, reused by every stage
 │   ├── normalize.py       # shared text normalizer (refs and hyps)
 │   └── inspect_data.py    # data inventory / sanity checks
 ├── EDA/
@@ -114,6 +117,8 @@ ATC/
 ├── models/whisper-small-lora/   # exported fine-tuned model
 ├── predictions/                 # saved hypotheses, one <split>-<tag>.jsonl per model
 ├── checkpoints/                 # training checkpoints (resumable)
+├── app.py                       # Gradio demo: clip -> transcript + callsign (Hugging Face Space)
+├── examples/                    # sample clips surfaced in the demo UI
 ├── requirements.txt             # pinned dependencies (install with pip install -r)
 ├── References / Results / Papers
 ```
@@ -176,6 +181,30 @@ python SRC/infer.py path/to/folder
 
 Defaults to the fine-tuned model and writes `transcripts.jsonl`. WAV/FLAC/OGG/AIFF
 are read directly; MP3/M4A should be converted to WAV first.
+
+---
+
+## Interactive demo
+
+`app.py` wraps the fine-tuned model in a small Gradio interface: upload or record a clip and
+read back the transcript and the extracted callsign. It reuses the same decode, model loading,
+transcription, and callsign extraction as the evaluation (`transcribe` and `scoring`), so the
+demo runs the exact path the numbers above score rather than a separate one.
+
+```bash
+# from the project root
+pip install -r requirements.txt   # includes gradio
+python app.py
+```
+
+The first request loads the model and is slow; every request after is cached. The interface
+selects MPS, CUDA, or CPU automatically, so it runs unchanged on the free CPU-only Hugging Face
+Spaces tier. Drop a few short `.wav` clips in `examples/` and they appear as one-click samples.
+
+A hosted version runs as a Hugging Face Space:
+[jsf3467v/atc-audio-to-text](https://huggingface.co/spaces/jsf3467v/atc-audio-to-text). Like the
+rest of the project it is a non-commercial research demo, consistent with the UWB-ATCC
+CC BY-NC-SA 4.0 license under which the model was trained.
 
 ---
 
@@ -243,7 +272,7 @@ This project serves as the research core of an ATC transcription system—proof 
 The model carries UWB-ATCC's CC BY-NC-SA 4.0 (non-commercial) license, which prohibits commercial deployment as trained. A production system must be retrained using commercially cleared data—such as paid datasets from LDC-ATCC or ATCO2-PL, or licensed proprietary recordings.
 
 ### Serving and streaming
-`infer.py` performs batch transcription. For live applications, a streaming pipeline is needed: voice activity detection to segment ongoing radio signals into utterances, low-latency, chunked inference, and a serving layer (including an API, queue, and autoscaling) with real-time latency targets rather than a one-time process.
+`infer.py` conducts batch transcription, but for live setups, a streaming pipeline is essential. This pipeline should include voice activity detection to segment continuous radio signals into utterances, enable low-latency, chunked inference, and feature a serving layer with an API, queue, and autoscaling. It must also meet real-time latency targets instead of just performing a single process.
 
 ### Robustness in various conditions
 The model was trained on three specific airspace corpora, and the measured out-of-distribution (OOD) gap (0.286 WER on ATCO2) indicates accuracy declines outside the training data. A production system would require wider training data, augmentation for noise and narrowband environments, handling of overlapping transmissions, and continuous evaluation using real traffic.

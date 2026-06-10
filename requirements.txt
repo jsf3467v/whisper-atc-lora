@@ -1,23 +1,26 @@
 # Direct dependencies only, pinned. Transitive packages (including the
 # platform-specific CUDA/MPS torch backend) are resolved by pip per machine,
 # so this file installs correctly on Apple Silicon and on CUDA hosts alike.
-
+ 
 # Model and parameter-efficient fine-tuning
 torch==2.12.0
 transformers==4.53.3
 peft==0.19.1
 accelerate==1.13.0
-
+ 
 # Data pipeline
 datasets==4.8.5
 soundfile==0.13.1
 scipy==1.17.1
-
+ 
 # Evaluation
 jiwer==4.0.0
-
+ 
 # Exploratory analysis
 numpy==2.4.4
 pandas==3.0.2
 matplotlib==3.10.8
 jupyterlab==4.5.7
+ 
+# Demo / serving
+gradio==6.16.0
