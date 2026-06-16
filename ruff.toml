@@ -10,10 +10,10 @@ extend-exclude = [
 
 [lint]
 select = ["E", "F", "I", "UP", "B"]
-ignore = ["E501"]
+ignore = ["E501", "E402"]
 
 [lint.per-file-ignores]
-"*.ipynb" = ["E402", "F401", "F811"]
+"*.ipynb" = ["E402", "F401", "F811", "I001"]
 
 [format]
 quote-style = "double"

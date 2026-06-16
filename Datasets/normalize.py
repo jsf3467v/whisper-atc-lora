@@ -10,6 +10,7 @@ Known residual are grouped values such as "one hundred" or aircraft types "three
 twenty" are left for a later pass once real model errors are observed.
 """
 from __future__ import annotations
+
 import re
 
 DIGITS = {

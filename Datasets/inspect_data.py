@@ -12,9 +12,9 @@ import random
 from collections import Counter
 
 import soundfile as sf
-from datasets import Audio
-
 from data import corpora
+
+from datasets import Audio
 
 PREVIEW_SPLITS = ("train", "test_indomain", "test_ood")
 TEXT_FIELDS = ("source", "text_raw", "text_norm")

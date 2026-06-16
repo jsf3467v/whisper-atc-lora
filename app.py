@@ -10,18 +10,19 @@ text normalizer, and callsign extractor,
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 from functools import lru_cache
+from pathlib import Path
 
-import torch
 import gradio as gr
+import torch
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE / "SRC"))
 sys.path.insert(0, str(HERE / "Evaluation"))
 
-from transcribe import device, whisper, transcripts, waveform, root
 from scoring import callsign
+
+from transcribe import device, root, transcripts, waveform, whisper
 
 MODEL_DIR = str(root / "models" / "whisper-small-lora")
 

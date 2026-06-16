@@ -10,11 +10,12 @@ keeps every model's output distinct in a single folder.
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import torch
-from transformers import WhisperProcessor, WhisperForConditionalGeneration
+from transformers import WhisperForConditionalGeneration, WhisperProcessor
+
 from datasets import Audio
 
 HERE = Path(__file__).resolve().parent
@@ -23,8 +24,8 @@ if root is None:
     raise FileNotFoundError("Could not find the Datasets folder; keep this inside the ATC project.")
 sys.path.insert(0, str(root / "Datasets"))
 
+from audio import TARGET_SR, waveform
 from data import corpora
-from audio import waveform, TARGET_SR
 
 
 def device():
@@ -67,7 +68,7 @@ def hypotheses(split, name, model, processor, dev, tag, batch=16):
         for start in range(0, len(pending), batch):
             chunk = pending[start:start + batch]
             guesses = transcripts(model, processor, [waveform(raw[i]["audio"]) for i in chunk], dev)
-            for i, hyp in zip(chunk, guesses):
+            for i, hyp in zip(chunk, guesses, strict=True):
                 f.write(json.dumps({"i": i, "source": sources[i], "ref": refs[i], "hyp": hyp}) + "\n")
             f.flush()
             if dev.type == "mps":

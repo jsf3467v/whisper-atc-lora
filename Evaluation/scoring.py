@@ -15,9 +15,9 @@ content-first readbacks where the callsign sits mid-sentence are the known gap.
 """
 from __future__ import annotations
 
+import sys
 from collections import Counter
 from pathlib import Path
-import sys
 
 import jiwer
 
@@ -27,7 +27,7 @@ if root is None:
     raise FileNotFoundError("Could not find the Datasets folder; keep this inside the ATC project.")
 sys.path.insert(0, str(root / "Datasets"))
 
-from normalize import normalize, DIGITS
+from normalize import DIGITS, normalize
 
 PHONETIC = {
     "alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel",
@@ -55,7 +55,7 @@ def callsign(text):
 
 def callsign_scores(refs, hyps):
     tp = ref_n = hyp_n = exact = covered = 0
-    for ref, hyp in zip(refs, hyps):
+    for ref, hyp in zip(refs, hyps, strict=True):
         gold = callsign(ref)
         if not gold:
             continue

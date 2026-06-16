@@ -9,20 +9,19 @@ Output: a merged model at <project>/models/<tag>/, which transcribe.py runs as-i
 """
 from __future__ import annotations
 
-from transcribe import device, waveform, root, TARGET_SR  # sets up the Datasets path
-
 import torch
-from datasets import Audio
+from data import corpora
 from peft import LoraConfig, get_peft_model
 from transformers import (
-    WhisperProcessor,
-    WhisperForConditionalGeneration,
     Seq2SeqTrainer,
     Seq2SeqTrainingArguments,
     TrainerCallback,
+    WhisperForConditionalGeneration,
+    WhisperProcessor,
 )
 
-from data import corpora
+from datasets import Audio
+from transcribe import TARGET_SR, device, root, waveform  # sets up the Datasets path
 
 
 class Collator:

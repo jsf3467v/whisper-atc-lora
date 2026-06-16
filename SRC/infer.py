@@ -19,7 +19,7 @@ from pathlib import Path
 
 import torch
 
-from transcribe import device, whisper, transcripts, waveform, root
+from transcribe import device, root, transcripts, waveform, whisper
 
 sys.path.insert(0, str(root / "Evaluation"))
 from scoring import callsign
@@ -48,7 +48,7 @@ def main(target, model_id=DEFAULT_MODEL, out="transcripts.jsonl", batch=16):
         for start in range(0, len(files), batch):
             chunk = files[start:start + batch]
             texts = transcripts(model, processor, [waveform({"path": str(p)}) for p in chunk], dev)
-            for p, text in zip(chunk, texts):
+            for p, text in zip(chunk, texts, strict=True):
                 hyp = text.strip()
                 f.write(json.dumps({"file": p.name, "transcript": hyp,
                                     "callsign": " ".join(callsign(hyp))}) + "\n")

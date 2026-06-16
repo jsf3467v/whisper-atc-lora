@@ -12,15 +12,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from normalize import normalize
+
 from datasets import (
-    load_dataset,
-    load_from_disk,
     Audio,
     DatasetDict,
     concatenate_datasets,
+    load_dataset,
+    load_from_disk,
 )
-
-from normalize import normalize
 
 HERE = Path(__file__).resolve().parent
 CACHE = HERE / "cache"

@@ -11,8 +11,8 @@ those numbers are optimistic). Out-of-distribution (ATCO2) is the honest signal.
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 root = next((p for p in [HERE, *HERE.parents] if (p / "Datasets" / "data.py").exists()), None)
@@ -21,8 +21,8 @@ if root is None:
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(root / "Datasets"))
 
-from scoring import scores
 from normalize import normalize
+from scoring import scores
 
 COLUMNS = ("callsign_recall", "callsign_precision", "callsign_exact", "callsign_coverage", "wer")
 HEADS = ("recall", "prec", "exact", "cov", "wer")
