@@ -1,0 +1,19 @@
+target-version = "py311"
+line-length = 100
+
+extend-exclude = [
+    "checkpoints",
+    "predictions",
+    "models",
+    "*.ipynb_checkpoints",
+]
+
+[lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[lint.per-file-ignores]
+"*.ipynb" = ["E402", "F401", "F811"]
+
+[format]
+quote-style = "double"

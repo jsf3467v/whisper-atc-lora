@@ -1,3 +1,5 @@
+[![CI](https://github.com/jsf3467v/whisper-atc-lora/actions/workflows/ci.yml/badge.svg)](https://github.com/jsf3467v/whisper-atc-lora/actions/workflows/ci.yml)
+
 # ATC Audio-to-Text: Fine-Tuning Whisper for Air Traffic Control Transcription
 
 This project fine-tunes OpenAI's Whisper-small model using LoRA to transcribe air traffic control (ATC)
