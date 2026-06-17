@@ -11,7 +11,7 @@ baseline, parameter-efficient fine-tuning, and leak-checked evaluation. The resu
 All training and inference run locally on Apple Silicon (M4 MAX, MPS). The code is
 device-agnostic and runs unchanged on CUDA.
 
-**[Try the live demo](https://huggingface.co/spaces/jsf3467v/atc-audio-to-text)**. Upload or
+**[Live demo here:](https://huggingface.co/spaces/jsf3467v/atc-audio-to-text)**. Upload or
 record an ATC clip and read back the transcript with its extracted callsign.
 
 ---
