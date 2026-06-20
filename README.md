@@ -22,7 +22,7 @@ The table below shows Word Error Rate (WER) and callsign metrics as the model pr
 | in-domain leak-free | 4231 | 0.470 to **0.870** | 0.570 to **0.882** | 0.194 to **0.695** | 0.619 to **0.116** |
 | **OOD ATCO2 (unseen corpus)** | 871 | 0.353 to **0.633** | 0.464 to **0.676** | 0.136 to **0.331** | 0.559 to **0.286** |
 
-The clearest evidence shows that fine-tuning significantly improved the most challenging in-domain segment. A zero-shot Whisper-small model failed on 8 kHz narrowband UWB-ATCC radio, achieving a 0.869 WER, but fine-tuning reduced this to 0.188, a 4.6-fold improvement.
+The results demonstrate that fine-tuning significantly improved the most challenging in-domain segment. A zero-shot Whisper-small model failed on 8 kHz narrowband UWB-ATCC radio, achieving a 0.869 WER, but fine-tuning reduced this to 0.188, a 4.6-fold improvement.
 
 These improvements are not due to memorized data. The leak-free row, which excludes overlapping utterances from the training set, has a WER of 0.112 compared to the overall 0.116, indicating that in-domain gains persist even after removing leaked examples.
 
