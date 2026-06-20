@@ -2,24 +2,17 @@
 
 # ATC Audio-to-Text, Fine-Tuning Whisper for Air Traffic Control Transcription
 
-This project fine-tunes OpenAI's Whisper-small model using LoRA to transcribe air traffic control (ATC)
-radio communications, with a special focus on **callsign accuracy** and
-**out-of-distribution generalization**. It processes raw public ATC datasets through a complete pipeline that includes data unification, exploratory analysis, a zero-shot
-baseline, parameter-efficient fine-tuning, and leak-checked evaluation. The results show that training on existing ATC speech enables the model to perform well on a corpus it has not encountered before.
+This project applies LoRA fine-tuning to Whisper-small to improve the transcription of air traffic control (ATC) radio communications. The main challenges involve accurately reading callsigns and maintaining this accuracy on audio recorded under different conditions than those in the training data. Three public ATC corpora are combined into a single dataset and evaluated twice, once with a zero-shot baseline and again after LoRA fine-tuning. A leak check ensures that any improvements are due to learning, not data overlap. The most significant impact is seen on ATCO2, a corpus not included in training. Here, the word error rate decreased from $0.559$ to $0.286$, and the number of callsign exact matches more than doubled. Since the model had not previously encountered this audio, these improvements indicate genuine learning rather than memorization.
 
+All training and inference are performed locally on Apple Silicon (M4 Max, MPS). Since the code is device-agnostic, it also runs unchanged on CUDA.
 
-All training and inference run locally on Apple Silicon (M4 MAX, MPS). The code is
-device-agnostic and runs unchanged on CUDA.
-
-**[Live demo here:](https://huggingface.co/spaces/jsf3467v/atc-audio-to-text)**. Upload or
-record an ATC clip and read back the transcript with its extracted callsign.
+A **[live demo](https://huggingface.co/spaces/jsf3467v/atc-audio-to-text)** lets you upload or record an ATC clip and read back the transcript with its extracted callsign.
 
 ---
 
 ## Results
 
-Word Error Rate (WER) and callsign metrics, from the zero-shot baseline to the LoRA fine-tuned model.
-Lower WER is better. Higher callsign scores are better.
+The table below shows Word Error Rate (WER) and callsign metrics as the model progresses from the zero-shot baseline to the LoRA fine-tuning, with lower WER and higher callsign scores indicating improved performance.
 
 | Split | n | Recall | Precision | Exact | WER |
 |---|---|---|---|---|---|
@@ -29,27 +22,13 @@ Lower WER is better. Higher callsign scores are better.
 | in-domain leak-free | 4231 | 0.470 to **0.870** | 0.570 to **0.882** | 0.194 to **0.695** | 0.619 to **0.116** |
 | **OOD ATCO2 (unseen corpus)** | 871 | 0.353 to **0.633** | 0.464 to **0.676** | 0.136 to **0.331** | 0.559 to **0.286** |
 
-Three things stand out in this table.
+The clearest evidence shows that fine-tuning significantly improved the most challenging in-domain segment. A zero-shot Whisper-small model failed on 8 kHz narrowband UWB-ATCC radio, achieving a 0.869 WER, but fine-tuning reduced this to 0.188, a 4.6-fold improvement.
 
-- **The hardest in-domain slice was rescued.** A basic Whisper-small effectively
-  failed on 8 kHz narrowband UWB-ATCC radio (0.869 WER). Fine-tuning cut that to
-  0.188, a $4.6\times$ reduction.
+These improvements are not due to memorized data. The leak-free row, which excludes overlapping utterances from the training set, has a WER of 0.112 compared to the overall 0.116, indicating that in-domain gains persist even after removing leaked examples.
 
+Out-of-distribution results are the most significant and remain consistent after resampling. A bootstrap analysis with 10,000 samples on ATCO2 shows an OOD WER of 0.286 within a 95% confidence interval of [0.271, 0.302]. The paired difference over the baseline is -0.272 with a confidence interval of [-0.303, -0.245]. Since this interval is entirely below zero, the improvement is real and not due to sampling variability, especially since the model was not trained on ATCO2, ruling out memorization.
 
-- **The gains are not memorization.** The leak-free row (training-overlapping
-  utterances removed) is essentially identical to the overall row (0.112 vs 0.116
-  WER), so the in-domain improvement survives when leaked examples are stripped out.
-
-
-- **The model demonstrates strong generalization.** On ATCO2, a dataset it was not trained on and from different airports,
-the Word Error Rate (WER) nearly halved (from 0.559 to 0.286), and the callsign exact-match more than doubled. This is the key result,
-as performance on out-of-distribution data cannot be attributed to fitting the training data. A 10k-sample bootstrap puts the OOD WER at 
-0.286 with a 95% CI of $[0.271, 0.302]$. The paired improvement over the baseline is $-0.272$ with a 95% CI of $[-0.303, -0.245]$. 
-That interval stays below zero, so the gain reflects a real improvement rather than sampling noise.
-
-WER and callsign metrics are computed on text passed through a shared normalizer, so
-formatting differences (digits-as-words, casing) are neutralized on both sides and
-the improvements reflect genuine recognition, not output reformatting.
+All metrics are based on text normalized through a shared process, eliminating formatting differences like number words or inconsistent casing. Therefore, the reported gains reflect true recognition improvements rather than reformatting.
 
 ---
 
@@ -57,9 +36,7 @@ the improvements reflect genuine recognition, not output reformatting.
 
 ### Data
 
-All corpora are freely available and accessible through the Hugging Face Hub. The large paid datasets, ATCO2-PL
-set and LDC-ATCC, are intentionally excluded.
-
+All corpora are openly accessible via the Hugging Face Hub, while the larger paid datasets, ATCO2-PL and LDC-ATCC, are intentionally excluded.
 
 | Corpus | Role | Approx. size | Native rate | License |
 |---|---|---|---|---|
@@ -67,38 +44,21 @@ set and LDC-ATCC, are intentionally excluded.
 | UWB-ATCC | in-domain (real radio) | about 20 h | 8 kHz | CC BY-NC-SA 4.0 (non-commercial) |
 | ATCO2-1h | **out-of-distribution** test | about 1 h | 16 kHz | free ATCO2 subset |
 
-The `train` and `validation` splits are drawn from ATCOSIM and UWB-ATCC. The `test_indomain`
-split is their held-out test sets. The `test_ood` split is all of ATCO2-1h, never trained on.
+The training and validation use data from ATCOSIM and UWB-ATCC, with their remaining parts serving as the in-domain test. ATCO2-1h is reserved exclusively for out-of-distribution testing and is not included in any other training set.
 
 ### Normalization and scoring
 
-A single normalizer (`Datasets/normalize.py`) is consistently applied to both references
-and hypotheses before calculating any metric. This process includes lowercasing, removing non-speech markup, expanding digit runs (`290` becomes `two nine zero`), and ICAO phonetic
-canonicalization (`alfa` and `alpha` become `alpha`). Using the same normalization function throughout ensures that all evaluations are comparable.
+Before calculating any metric, a single normalizer (`Datasets/normalize.py`) processes both the reference and the hypothesis through identical steps: cleaning, converting to lowercase, removing non-speech markup, and rewriting digit runs (e.g., `290` becomes `two nine zero`). It also standardizes ICAO phonetics so that `alfa` and `alpha` are unified. Applying the same function to both sides ensures a fair comparison.
 
-
-Callsign accuracy uses a structure-based extractor that handles both ATC callsign formats.
-The first is the operator name followed by digits or phonetic spelling, like "delta four seven zero"
-for airline style. The second is a sequence of phonetic letters, such as "hotel golf echo" for
-registration style. This is evaluated with token precision and recall (for the lead), exact match,
-and coverage metrics.
-
+Callsign accuracy depends on a structure-based extractor that identifies the two typical forms of callsigns in ATC speech. An airline callsign combines an operator name with digits or phonetic spelling, like `delta four seven zero`, while a registration callsign is a sequence of phonetic letters, such as `november one two three alpha`. The extractor is evaluated based on token-level precision and recall for the lead part, along with exact match and coverage metrics indicating how often a callsign is detected.
 
 ### Model and training
 
-Whisper-small (244 M parameters) with LoRA adapters (rank 16, $\alpha$ 32, on the attention
-query and value projections), trained for 3 epochs at learning rate 1e-3 in fp32 on MPS.
-The best checkpoint is selected by validation loss, then the adapter is merged into
-the base weights and exported as a standard model directory.
+The core model is Whisper-small with 244 million parameters, enhanced with a LoRA adapter of rank 16 and an alpha value of 32 applied to the attention query and value projections. Training runs for three epochs in fp32 on MPS at a learning rate of 10^-3, with the checkpoint exhibiting the lowest validation loss saved. This adapter is then merged into the base weights and exported as a standard model directory, making it transparent to downstream tasks that LoRA was used.
 
 ### Evaluation
 
-Evaluation is entirely independent of training. The same scorer assesses both the
-baseline and the fine-tuned model, providing reports for per-source, overall, leak-free
-in-domain, and OOD results. In-domain leakage is explicitly verified, while OOD is considered a reliable 
-indicator of generalization. The shared normalizer and callsign extractor are covered by unit tests run in CI, 
-so the metric definitions stay fixed as the code evolves.
-
+A single scorer assesses both the baseline and the fine-tuned model, providing results segmented by source. It includes overall scores, leak-free in-domain metrics, and out-of-distribution performance—viewed as the true measure of generalization—by directly checking for data leakage. Since the CI unit tests cover both the normalizer and the callsign extractor, their definitions stay stable as the code develops.
 
 ---
 
@@ -135,7 +95,6 @@ ATC/
 ├── References / Results / Papers
 ```
 
-
 ---
 
 ## Setup
@@ -144,11 +103,7 @@ ATC/
 pip install -r requirements.txt
 ```
 
-A few notes.
-- Audio is decoded with `soundfile` and resampled with `scipy`, so `torchcodec` is
-  **not** required (and is best left uninstalled to avoid backend conflicts).
-- On Apple Silicon the code uses MPS in fp32, and on CUDA it uses bf16. No edits needed
-  to switch.
+Audio is decoded with `soundfile` and resampled with `scipy`, which means `torchcodec` is not needed and is best left uninstalled so the audio backends do not conflict. Device handling is automatic, using MPS in fp32 on Apple Silicon and bf16 on CUDA, with no code changes needed to move between them.
 
 ---
 
@@ -164,7 +119,7 @@ python SRC/transcribe.py
 # 3. Fine-tune with LoRA (writes models/whisper-small-lora/)
 python SRC/train.py
 
-# 4. Fine-tuned predictions 
+# 4. Fine-tuned predictions
 python -c "import sys; sys.path.insert(0,'SRC'); import transcribe; \
   transcribe.main(model_id='models/whisper-small-lora', tag='whisper-small-lora')"
 
@@ -173,15 +128,13 @@ python Evaluation/evaluate.py whisper-small
 python Evaluation/evaluate.py whisper-small-lora
 ```
 
-A first run can use `train.main(epochs=1)` to validate the full pipeline quickly
-before committing to the longer three-epoch run.
+Passing `epochs=1` to `train.main` runs the whole pipeline quickly as a check before committing to the full three-epoch run.
 
 ---
 
 ## Using the model on new audio
 
-`SRC/infer.py` transcribes a single file or a folder of clips and writes the
-transcript and extracted callsign to JSONL.
+`SRC/infer.py` runs over a single file or an entire folder of clips and writes each transcript with its extracted callsign to JSONL.
 
 ```bash
 # single clip
@@ -191,17 +144,13 @@ python SRC/infer.py path/to/clip.wav
 python SRC/infer.py path/to/folder
 ```
 
-Defaults to the fine-tuned model and writes `transcripts.jsonl`. WAV/FLAC/OGG/AIFF
-are read directly. MP3/M4A should be converted to WAV first.
+It uses the fine-tuned model by default and writes to `transcripts.jsonl`. WAV, FLAC, OGG, and AIFF are read directly, while MP3 and M4A need converting to WAV first.
 
 ---
 
 ## Interactive demo
 
-`app.py` wraps the fine-tuned model in a small Gradio interface that lets you upload or record a clip and
-read back the transcript and the extracted callsign. It reuses the same decode, model loading,
-transcription, and callsign extraction as the evaluation (`transcribe` and `scoring`), so the
-demo runs the exact path the numbers above score rather than a separate one.
+`app.py` wraps the fine-tuned model in a Gradio interface for uploading or recording a clip and reading back its transcript and callsign. Since it uses the same decoding, model loading, transcription, and callsign extraction as the evaluation, the demo follows the exact process that produced the reported figures, rather than a separate one.
 
 ```bash
 # from the project root
@@ -209,123 +158,59 @@ pip install -r requirements.txt   # includes gradio
 python app.py
 ```
 
-The first request loads the model and is slow. Every request after is cached. The interface
-selects MPS, CUDA, or CPU automatically, so it runs unchanged on the free CPU-only Hugging Face
-Spaces tier. Drop a few short `.wav` clips in `examples/` and they appear as one-click samples.
-
-A hosted version runs as a Hugging Face Space at
-[jsf3467v/atc-audio-to-text](https://huggingface.co/spaces/jsf3467v/atc-audio-to-text). Like the
-rest of the project it is a non-commercial research demo, consistent with the UWB-ATCC
-CC BY-NC-SA 4.0 license under which the model was trained.
+The initial request takes time as the model loads, while subsequent requests are served from cache. The interface automatically chooses MPS, CUDA, or CPU, allowing it to operate seamlessly on the free CPU-only Hugging Face Spaces tier. Short `.wav` clips placed in `examples/` can be accessed with a single click. The hosted version is available at [jsf3467v/atc-audio-to-text](https://huggingface.co/spaces/jsf3467v/atc-audio-to-text). Similar to the rest of the project, it is a non-commercial research demo, adhering to the UWB-ATCC CC BY-NC-SA 4.0 license under which the model was trained.
 
 ---
 
 ## Limitations
 
-- **The callsign metric serves as a heuristic proxy rather than a definitive label.**
-Since the corpora do not provide callsign annotations for every source, the extractor
-relies on a fixed rule to read the reference text. It assumes the callsign appears first,
-which causes it to miss pilot *readbacks* where the callsign comes after the instruction
-(for example, "descending flight level one hundred ... csa one delta zulu" yields an incorrect span).
-Coverage (about 0.95) indicates how often a callsign can be extracted.
+The callsign metric serves as a heuristic indicator rather than an absolute label. Since the corpora do not annotate all sources with callsigns, the extractor follows a fixed rule that expects callsigns to appear first. This causes it to miss pilot readbacks where the callsign appears after the instruction, such as when a clearance is echoed back with the callsign at the end. The approximately 0.95 coverage rate reflects how often a callsign can be successfully extracted.
 
+Most remaining errors in ATCO2 are understandable upon review. A brief transmission provides limited context, occasional clips may include non-English or code-switched speech not encountered during training, and longer clips can cause the decoder to loop. Two common failure modes include a leading registration phonetic reduced to a single letter, such as `oscar` becoming "o," which lowers exact-match recall despite correct tokens overall. The model sometimes defaults to a frequent training callsign when uncertain, a bias that surveillance-context data could mitigate.
 
-- **Error analysis on the OOD set.** Most residual ATCO2 errors are interpretable. Very short transmissions
-give the model little context, some clips carry non-English or code-switched speech that never appeared in
-training, and long clips can trigger decoder repetition loops. Two patterns are systematic. The first is a
-leading registration phonetic that comes out as a bare letter, where `oscar` becomes `o` while the rest of
-the span stays correct. The second is a fallback to the most frequent training callsign under uncertainty,
-where the model guesses `lufthansa`. The first pattern explains why callsign exact-match reads lower than
-token recall, since these are single-token near-misses. The second is the case that surveillance-context
-biasing would address.
-
-
-- **ATCOSIM's near-perfect score reflects an easier scenario.** It involves clean, simulated,
-close-talk speech. The meaningful signals are UWB-ATCC (challenging in-domain) and ATCO2 (out-of-domain).
-
-
-- **Limited real-radio data.** About 20 hours of real ATC recordings for training and 1 hour out-of-domain.
-
-
-- **The audio is not American ATC.** No large free American ATC corpus exists, since LDC-ATCC is paid. The
-ATCOSIM, UWB-ATCC, and ATCO2 corpora supply the audio, and the code examples use American phraseology even
-though the recordings do not.
-
-
-- **UWB-ATCC is non-commercial (CC BY-NC-SA 4.0),** making this a research or portfolio project rather
-than a deployable commercial system.
-
-- **Partial number normalization.** Composite values like "one hundred" or aircraft types such as "three twenty" are not fully canonicalized.
-
+The remaining limitations are mainly related to data rather than the method. ATCOSIM is a clean, simulated, close-talk speech dataset, so its near-perfect score offers limited insight. In contrast, UWB-ATCC and ATCO2 provide more meaningful signals regarding the challenges in in-domain and out-of-domain conditions. The real-radio data is limited—around 20 hours for training against just an hour of out-of-domain material—and lacks American English, as the only sizable American corpus, LDC-ATCC, is paid. The free datasets, ATCOSIM, UWB-ATCC, and ATCO2, although featuring American phraseology in their examples, are more accessible but subject to licensing; UWB-ATCC is non-commercial under CC BY-NC-SA 4.0, making it suitable mainly for research rather than deployment. Additionally, the normalizer is only partial, leaving some composite numbers, such as `one hundred`, and aircraft types, such as `three twenty`, not fully canonicalized.
 
 ---
 
 ## Future work
 
-- **Callsign extraction.** Handle trailing and readback callsigns by checking both ends of the
-  utterance, improving the metric on pilot transmissions.
-
-
-- **Callsign biasing.** Feed nearby aircraft callsigns from surveillance context into
-  decoding, following the ATCO2 line of work, to boost callsign recognition.
-
-
-- **Structured extraction.** Add a post-ASR NER stage for callsign, command, and value, as
-  in the ATCO2 corpus annotations.
-
-
-- **More and broader data.** Add the paid ATCO2-PL and LDC-ATCC sets, including American
-  English, to widen acoustic and accent coverage.
-
-
-- **Model size context.** Add a Whisper-medium zero-shot row alongside the fine-tuned
-  small model, reported as context rather than as the comparison.
-
-
-- **Acoustic robustness.** Add augmentation targeting narrowband and noisy radio, where the
-  largest error remains.
+The most straightforward improvement involves the callsign extractor, which could process both ends of an utterance to identify readbacks it currently misses. Recognition could also improve by biasing the decoder towards aircraft known to be in the sector, which is inspired by the surveillance-context approach from the ATCO2 project. Additionally, a post-ASR named-entity stage could transform the raw transcript into labeled callsign, command, and value fields, similar to the ATCO2 annotations. Most remaining potential improvements lie in the data itself, since using the paid ATCO2-PL and LDC-ATCC datasets would yield better American English and broader acoustic coverage. Incorporating a Whisper-medium zero-shot row would help contextualize the fine-tuned small model. The remaining challenges are acoustic, where targeted augmentation for narrowband and noisy radio environments could address the conditions causing the most errors.
 
 ---
 
 ## Path to Deployment
 
-This project serves as the research core of an ATC transcription system. It is proof that domain-specific fine-tuning is effective and generalizes well. It is not a complete, deployable product. 
-The model represents about 20 percent of a full system, and the remaining components include data rights, infrastructure, and safety engineering. To turn this into a deployable system, several steps are necessary.
+This project is the research core of an ATC transcription system rather than a finished product. It establishes that domain-specific fine-tuning improves accuracy and generalizes to unseen audio. It is roughly a fifth of what a deployable system requires, and the rest divides into questions of data rights, serving infrastructure, and safety engineering, which the sections below take up in turn.
 
 ### Licensing
-The model carries UWB-ATCC's CC BY-NC-SA 4.0 (non-commercial) license, which prohibits commercial deployment as trained. A production system must be retrained using commercially cleared data, such as 
-paid datasets from LDC-ATCC or ATCO2-PL, or licensed proprietary recordings.
+
+The model inherits the UWB-ATCC CC BY-NC-SA 4.0 non-commercial license, which rules out commercial deployment as trained. Any production version would have to be retrained on commercially cleared material, whether it is the paid LDC-ATCC and ATCO2-PL sets or licensed proprietary recordings.
 
 ### Serving and streaming
-`infer.py` conducts batch transcription, but for live setups, a streaming pipeline is essential. This pipeline should include voice activity detection to segment continuous radio signals into utterances, 
-enable low-latency chunked inference, and feature a serving layer with an API, queue, and autoscaling. It must also meet real-time latency targets instead of just performing a single process.
+
+The current `infer.py` processes data in batches, but a real-time deployment requires a streaming pipeline that uses voice activity detection to segment the continuous radio stream into utterances. It should perform inference on low-latency chunks and be integrated with a serving layer that handles queueing and autoscaling, all operating under real-time latency rather than processing an entire file in one pass.
 
 ### Robustness in various conditions
-The model was trained on three specific airspace corpora, and the measured out-of-distribution (OOD) gap (0.286 WER on ATCO2) indicates accuracy declines outside the training data. 
-A production system would require wider training data, augmentation for noise and narrowband environments, handling of overlapping transmissions, and continuous evaluation using real traffic.
+
+The model was trained on three airspace corpora, and its $0.286$ WER on ATCO2 indicates a decline in accuracy when audio departs from this distribution. To improve production performance, more than just a better model is needed: this includes expanding training data, augmenting data for noisy and narrowband audio, developing methods to manage overlapping transmissions, and ongoing evaluation with live traffic.
 
 ### Handling callsigns operationally
-Currently, callsign detection relies on a leading-span heuristic, which has a known blind spot with trailing readbacks. Deploying a system would need a dedicated callsign extraction model and, 
-importantly, surveillance-context biasing, which supplies the list of aircraft in the sector so that recognition emphasizes actual callsigns.
+
+Callsign detection primarily relies on a leading-span heuristic, which has a known blind spot regarding trailing readbacks. Therefore, a deployed system should combine a dedicated callsign model with surveillance-context biasing that provides information about the aircraft currently in the sector, enabling recognition to favor the callsigns that are actually present.
 
 ### Monitoring and human factors
-The system should include confidence scores for each transcript to flag low-confidence outputs, monitor for drift, log data for feedback and retraining, and have a clear human-in-the-loop role, 
-such as assisting controllers or providing analytics rather than decision-making.
+
+During operation, the system should assign a confidence score to each transcript, enabling low-confidence outputs to be flagged. It should monitor for drift and log data for feedback and retraining, while remaining in a clearly human-in-the-loop role that supports controllers or provides analytics rather than autonomous decision-making.
 
 ### Safety and regulatory compliance
 
-ATC is a safety-critical system. All systems engaged in live operations must meet regulatory standards such as FAA requirements, undergo formal validation and certification processes, 
-and incorporate fail-safe features. In the short term, these aspects should be prioritized to ensure safe deployment. Keep ASR outside the critical path and use it for workload analysis,
-training tools, post-hoc analytics, and interface pre-fill. Practical operational deployment requires a certification process that goes far beyond model accuracy alone.
-
+ATC systems are safety-critical, so any component operating in live environments must comply with regulatory standards such as FAA requirements, undergo formal validation and certification, and be inherently fail-safe. In the short term, this suggests keeping ASR off the critical path, where it can assist with workload analysis, training tools, post-hoc analytics, and interface pre-fill. Operational deployment requires a comprehensive certification process that extends beyond just model accuracy.
 
 ---
 
 ## Data licensing and attribution
 
-ATCOSIM and the free ATCO2-1h subset are openly available. UWB-ATCC is licensed
-CC BY-NC-SA 4.0 (non-commercial). The corpora are used here for research only.
-Full citations are in `References`.
+ATCOSIM and the free ATCO2-1h subset are openly available, and UWB-ATCC is released under CC BY-NC-SA 4.0 for non-commercial use. All three are used here for research only, with full citations gathered in `References`.
 
 ---
 
@@ -352,3 +237,4 @@ Full citations are in `References`.
 - [ATCO2 corpus (Zuluaga-Gomez et al., 2023)](https://arxiv.org/abs/2211.04054)
 - Wav2Vec 2.0 domain-shifted ASR benchmark on ATC (Zuluaga-Gomez et al., IEEE SLT 2022)
 - Callsign detection and surveillance-based biasing, and BERTraffic (Zuluaga-Gomez et al.). See the idiap/atco2-corpus repo for citations
+
