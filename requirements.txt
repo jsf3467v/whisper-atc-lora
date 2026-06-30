@@ -20,7 +20,7 @@ jiwer==4.0.0
 numpy==2.4.4
 pandas==3.0.2
 matplotlib==3.10.8
-jupyterlab==4.5.7
+jupyterlab==4.5.9
  
 # Demo / serving
 gradio==6.16.0
