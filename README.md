@@ -2,7 +2,7 @@
 
 # ATC Audio-to-Text, Fine-Tuning Whisper for Air Traffic Control Transcription
 
-This project fine-tunes Whisper-small, OpenAI's speech recognition model, using LoRA to enhance the transcription of air traffic control (ATC) radio communications. The main challenges are accurately reading callsigns and maintaining this accuracy across audio from various airports recorded at different bandwidths and noise levels compared to the training data. Three public ATC corpora are combined into one dataset, which is evaluated twice: once with a pretrained baseline and again after LoRA fine-tuning. A leak check was implemented to exclude test utterances from the training data as well, ensuring that the reported improvements are based on data without overlap. The most notable results are on ATCO2, a corpus not included in training, where the word error rate dropped from $0.559$ to $0.286$, and exact callsign matches more than doubled. Since this audio was previously unseen by the model, these improvements suggest genuine learning rather than memorization.
+This project fine-tunes Whisper-small, OpenAI's speech recognition model, using LoRA to enhance the transcription of air traffic control (ATC) radio communications. The main challenges are accurately reading callsigns and maintaining this accuracy across audio from various airports recorded at different bandwidths and noise levels compared to the training data. Three public ATC corpora are combined into one dataset, which is evaluated twice, once with a pretrained baseline and again after LoRA fine-tuning. A leak check was implemented to exclude test utterances from the training data as well, ensuring that the reported improvements are based on data without overlap. The most notable results are on ATCO2, a corpus not included in training, where the word error rate dropped from $0.559$ to $0.286$, and exact callsign matches more than doubled. Since this audio was previously unseen by the model, these improvements suggest genuine learning rather than memorization.
 
 All training and inference run locally on Apple Silicon (M4 Max, MPS). The code is device-agnostic and runs unchanged on CUDA.
 
@@ -32,7 +32,7 @@ All metrics are based on text normalized through a shared process, eliminating f
 
 ---
 
-## Approach
+## Methodology
 
 ### Data
 
