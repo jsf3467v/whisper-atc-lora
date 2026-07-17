@@ -1,0 +1,243 @@
+{
+  "split": "test_ood",
+  "tag": "whisper-small-lora",
+  "n": 871,
+  "wer": 0.286189376443418,
+  "ci": [
+    0.2714180853255937,
+    0.3019548463861399
+  ],
+  "baseline": "whisper-small",
+  "delta": {
+    "point": -0.2723325635103926,
+    "ci": [
+      -0.3033805204105992,
+      -0.24595579203253595
+    ],
+    "n": 871
+  },
+  "worst": [
+    {
+      "wer": 2.0,
+      "ref": "wilco",
+      "hyp": "chill go"
+    },
+    {
+      "wer": 1.4285714285714286,
+      "ref": "victor oscar roger talk to you later",
+      "hyp": "victor oscar roger roger roger roger roger roger roger roger roger roger ro"
+    },
+    {
+      "wer": 1.3333333333333333,
+      "ref": "berne tower hello again helicopter hotel bravo zulu whiskey juliet uttigen two thousand three hundred",
+      "hyp": "praha hello lufthansa two lufthansa two lufthansa two lufthansa two lufthansa two lufthansa two lufthansa two lufthansa two lufthansa two lufth"
+    },
+    {
+      "wer": 1.1666666666666667,
+      "ref": "report on final bramois hotel yankee",
+      "hyp": "three four five one more ready to"
+    },
+    {
+      "wer": 1.1666666666666667,
+      "ref": "departure rex sixty eight sixty eight",
+      "hyp": "to patriss rec six two eight six two"
+    },
+    {
+      "wer": 1.0833333333333333,
+      "ref": "ok we won t see company quickly to refound no problem technic",
+      "hyp": "pac air we ll ask you company three three five no problem as any say thank you"
+    },
+    {
+      "wer": 1.0,
+      "ref": "air france one zero eight zulu",
+      "hyp": "lufthansa two"
+    },
+    {
+      "wer": 1.0,
+      "ref": "hotel xray",
+      "hyp": "six five"
+    },
+    {
+      "wer": 1.0,
+      "ref": "hotel bravo golf kilo echo one four thousand feet",
+      "hyp": "one five thousand or more seven hundred"
+    },
+    {
+      "wer": 1.0,
+      "ref": "thank you very much hotel papa mike",
+      "hyp": "two five one"
+    },
+    {
+      "wer": 1.0,
+      "ref": "affirmatif montana",
+      "hyp": "bocadam"
+    },
+    {
+      "wer": 1.0,
+      "ref": "merci au plaisir aurevoir",
+      "hyp": "fuse"
+    }
+  ],
+  "callsign_misses": {
+    "count": 559,
+    "covered": 836,
+    "examples": [
+      {
+        "gold": [
+          "oscar",
+          "kilo",
+          "foxtrot",
+          "alpha",
+          "oscar"
+        ],
+        "guess": [
+          "o",
+          "kilo",
+          "foxtrot",
+          "alpha",
+          "oscar"
+        ]
+      },
+      {
+        "gold": [
+          "oscar",
+          "kilo",
+          "echo",
+          "lima",
+          "alpha"
+        ],
+        "guess": [
+          "o",
+          "kilo",
+          "echo",
+          "lima",
+          "alpha"
+        ]
+      },
+      {
+        "gold": [
+          "oscar",
+          "kilo"
+        ],
+        "guess": [
+          "o",
+          "kilo"
+        ]
+      },
+      {
+        "gold": [
+          "oscar",
+          "kilo",
+          "hotel",
+          "hotel",
+          "hotel"
+        ],
+        "guess": [
+          "o",
+          "kilo",
+          "hotel",
+          "hotel"
+        ]
+      },
+      {
+        "gold": [
+          "roger",
+          "thank"
+        ],
+        "guess": [
+          "thank",
+          "you"
+        ]
+      },
+      {
+        "gold": [
+          "euro",
+          "wings",
+          "one",
+          "tango",
+          "kilo"
+        ],
+        "guess": [
+          "eurobing",
+          "one",
+          "tango",
+          "kilo"
+        ]
+      },
+      {
+        "gold": [
+          "unfortunately",
+          "with"
+        ],
+        "guess": [
+          "fortunately",
+          "with"
+        ]
+      },
+      {
+        "gold": [
+          "warsaw",
+          "radar"
+        ],
+        "guess": [
+          "vlm",
+          "radar"
+        ]
+      },
+      {
+        "gold": [
+          "oscar",
+          "kilo",
+          "charlie",
+          "alpha",
+          "papa"
+        ],
+        "guess": [
+          "oscar",
+          "echo",
+          "charlie",
+          "alpha",
+          "papa"
+        ]
+      },
+      {
+        "gold": [
+          "squawk",
+          "seven"
+        ],
+        "guess": [
+          "coq",
+          "lufthansa",
+          "two"
+        ]
+      },
+      {
+        "gold": [
+          "oscar",
+          "kilo",
+          "echo",
+          "lima",
+          "alpha"
+        ],
+        "guess": [
+          "kilo",
+          "echo",
+          "lima",
+          "alpha"
+        ]
+      },
+      {
+        "gold": [
+          "oscar",
+          "uniform",
+          "romeo"
+        ],
+        "guess": [
+          "square",
+          "uniform",
+          "romeo"
+        ]
+      }
+    ]
+  }
+}
