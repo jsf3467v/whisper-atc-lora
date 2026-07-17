@@ -1,4 +1,4 @@
-# Data stage only. Apple Silicon (M-series) friendly — no CUDA needed here.
+# Data stage only. 
 datasets>=2.19,<3.0
 soundfile>=0.12        # libsndfile-backed audio decoding used by `datasets`
 librosa>=0.10          # resampling fallback / quick audio stats
