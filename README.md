@@ -16,12 +16,12 @@ Word error rate counts substituted, deleted, and inserted words relative to the 
 
 | Test split | Utterances | Pretrained WER | Fine-tuned WER | Change [95% interval] |
 |---|---|---|---|---|
-| ATCOSIM (in-domain, simulated) | 1,901 | 0.299 | 0.021 | $-0.278$ [$-0.297$, $-0.259$] |
-| UWB-ATCC (in-domain, radio) | 2,822 | 0.834 | 0.189 | $-0.646$ [$-0.681$, $-0.613$] |
-| In-domain overall | 4,723 | 0.589 | 0.112 | $-0.477$ [$-0.501$, $-0.456$] |
-| In-domain, transcripts unseen in training | 4,222 | 0.597 | 0.115 | $-0.482$ [$-0.510$, $-0.457$] |
-| In-domain, recordings unseen in training | 4,601 | 0.597 | 0.115 | $-0.482$ [$-0.504$, $-0.462$] |
-| **ATCO2 (out-of-distribution)** | **871** | **0.567** | **0.296** | $-0.271$ [$-0.299$, $-0.244$] |
+| ATCOSIM (in-domain, simulated) | 1,901 | 0.299 | 0.021 | $-0.278\ [-0.297, -0.259]$ |
+| UWB-ATCC (in-domain, radio) | 2,822 | 0.834 | 0.189 | $-0.646\ [-0.681, -0.613]$ |
+| In-domain overall | 4,723 | 0.589 | 0.112 | $-0.477\ [-0.501, -0.456]$ |
+| In-domain, transcripts unseen in training | 4,222 | 0.597 | 0.115 | $-0.482\ [-0.510, -0.457]$ |
+| In-domain, recordings unseen in training | 4,601 | 0.597 | 0.115 | $-0.482\ [-0.504, -0.462]$ |
+| **ATCO2 (out-of-distribution)** | **871** | **0.567** | **0.296** | $-0.271\ [-0.299, -0.244]$ |
 
 The out-of-distribution change is the primary result. Every one of the 10,000 resamples showed an improvement, and because ATCO2 was held out of training, the gain reflects generalization to recordings and recording conditions outside the training data, including Australian traffic absent from both training corpora. The largest in-domain gain is on UWB-ATCC, where the pretrained model struggled with 8 kHz narrowband radio and fine-tuning reduced word error rate by a factor of $4.4$.
 
