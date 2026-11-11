@@ -5,7 +5,8 @@ from types import SimpleNamespace
 
 import pytest
 import torch
-from datasets import Dataset
+from datasets import Dataset, DatasetDict
+from transformers import WhisperConfig, WhisperForConditionalGeneration
 
 import transcribe
 
@@ -19,6 +20,7 @@ class Tokenizer:
 
 class Processor:
     tokenizer = Tokenizer()
+    feature_extractor = SimpleNamespace(chunk_length=30)
 
     def get_decoder_prompt_ids(self, language, task):
         return [(1, 0), (2, 0), (3, 0)]
@@ -149,3 +151,45 @@ def test_hypotheses(project, monkeypatch):
     assert [r["i"] for r in rows] == [1, 2, 0]
     assert all(r["hyp"] == f"p{r['i']}" and r["ref"] == "abc"[r["i"]] for r in rows)
     assert transcribe.hypotheses(split, "test", model, None, CPU, "tag", 2) == 0
+
+
+def tiny():
+    config = WhisperConfig(
+        vocab_size=51865, d_model=16, encoder_layers=1, decoder_layers=1,
+        encoder_attention_heads=2, decoder_attention_heads=2, encoder_ffn_dim=32,
+        decoder_ffn_dim=32, max_source_positions=1500, max_target_positions=32,
+    )  # fmt: skip
+    return WhisperForConditionalGeneration(config)
+
+
+def test_whisper(project, monkeypatch):
+    sources = []
+    monkeypatch.setattr(
+        transcribe.WhisperProcessor, "from_pretrained", lambda src: sources.append(src) or "p"
+    )
+    monkeypatch.setattr(
+        transcribe.WhisperForConditionalGeneration, "from_pretrained", lambda src: tiny()
+    )
+    (project / "models" / "m").mkdir(parents=True)
+    model, processor = transcribe.whisper("models/m", CPU)
+    assert processor == "p" and not model.training and model.config.use_cache
+    assert model.proj_out.weight is model.get_input_embeddings().weight
+    transcribe.whisper("openai/whisper-small", CPU)
+    assert sources == [str(project / "models" / "m"), "openai/whisper-small"]
+
+
+def test_main(project, monkeypatch, capsys):
+    calls = []
+    split = Dataset.from_dict({"seconds": [1.0, 31.0], "text_norm": ["a b", "a"]})
+    data = DatasetDict({"train": split, "test_indomain": split, "test_ood": split})
+    monkeypatch.setattr(transcribe, "whisper", lambda model_id, dev: (Model(), Processor()))
+    monkeypatch.setattr(transcribe, "corpora", lambda: data)
+    monkeypatch.setattr(
+        transcribe,
+        "hypotheses",
+        lambda s, name, m, p, d, tag, batch: calls.append((name, tag)) or 2,
+    )
+    transcribe.main("models/whisper-small-lora")
+    assert calls == [("test_indomain", "whisper-small-lora"), ("test_ood", "whisper-small-lora")]
+    out = capsys.readouterr().out
+    assert "max new tokens 3" in out and out.count("2 new of 2 utterances | over 30 s 1") == 2

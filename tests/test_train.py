@@ -5,7 +5,8 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 import torch
-from transformers import WhisperFeatureExtractor
+from datasets import Dataset, DatasetDict
+from transformers import WhisperConfig, WhisperFeatureExtractor, WhisperForConditionalGeneration
 
 import train
 
@@ -97,3 +98,60 @@ def test_odd_batch_raises(tmp_path, trainer):
     with pytest.raises(RuntimeError, match="out of memory"):
         train.fit("m", processor, list(range(64)), [], tmp_path, CPU, 5, 1, 1, 1e-3)
     assert trainer.calls == [(5, 1)]
+
+
+def test_lora_size(monkeypatch):
+    config = WhisperConfig(
+        vocab_size=51865, d_model=768, encoder_layers=12, decoder_layers=12,
+        encoder_attention_heads=12, decoder_attention_heads=12, encoder_ffn_dim=3072,
+        decoder_ffn_dim=3072, max_source_positions=1500, max_target_positions=448,
+    )  # fmt: skip
+    monkeypatch.setattr(
+        train.WhisperForConditionalGeneration,
+        "from_pretrained",
+        lambda name: WhisperForConditionalGeneration(config),
+    )
+    model = train.base_model("openai/whisper-small", CPU)
+    trainable, total = model.get_nb_trainable_parameters()
+    assert trainable == 1_769_472 and total - trainable == 241_734_912
+    assert round(100 * trainable / total, 2) == 0.73 and not model.config.use_cache
+
+
+def test_main(tmp_path, monkeypatch, capsys):
+    saved, fitted = [], {}
+
+    class Processor:
+        feature_extractor = SimpleNamespace(chunk_length=30)
+        tokenizer = staticmethod(lambda texts, add_special_tokens: SimpleNamespace(
+            input_ids=[t.split() for t in texts]
+        ))  # fmt: skip
+
+        def get_decoder_prompt_ids(self, language, task):
+            return [(1, 0), (2, 0), (3, 0)]
+
+        def save_pretrained(self, path):
+            saved.append(path)
+
+    merged = SimpleNamespace(
+        config=SimpleNamespace(max_target_positions=448),
+        generation_config=SimpleNamespace(max_length=448, max_new_tokens=None),
+        save_pretrained=saved.append,
+    )
+
+    def fit(name, processor, train_ds, val_ds, out_dir, *args):
+        fitted.update(train=len(train_ds), val=len(val_ds), out=out_dir)
+        return SimpleNamespace(model=SimpleNamespace(merge_and_unload=lambda: merged))
+
+    split = Dataset.from_dict({"seconds": [2.0, 40.0], "text_norm": ["a b c", "a"]})
+    monkeypatch.setattr(train, "root", tmp_path)
+    monkeypatch.setattr(train.WhisperProcessor, "from_pretrained", lambda *a, **k: Processor())
+    monkeypatch.setattr(
+        train, "corpora", lambda: DatasetDict({"train": split, "validation": split})
+    )
+    monkeypatch.setattr(train, "fit", fit)
+    train.main()
+    assert fitted["train"] == fitted["val"] == 1
+    assert fitted["out"].parent == tmp_path / "checkpoints" / "whisper-small-lora"
+    assert saved == [str(tmp_path / "models" / "whisper-small-lora")] * 2
+    assert merged.generation_config.max_new_tokens == 4
+    assert "over 30 s dropped 2" in capsys.readouterr().out

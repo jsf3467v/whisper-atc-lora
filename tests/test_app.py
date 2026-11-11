@@ -24,3 +24,11 @@ def test_examples():
 
 def test_interface():
     assert app.demo.title.endswith("+ LoRA)")
+
+
+def test_asr_cached(monkeypatch):
+    calls = []
+    monkeypatch.setattr(app, "whisper", lambda model, dev: calls.append(model) or ("m", "p"))
+    app.asr.cache_clear()
+    assert app.asr() is app.asr() and calls == [app.MODEL]
+    app.asr.cache_clear()
