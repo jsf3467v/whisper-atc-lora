@@ -13,7 +13,7 @@ Datasets/processed/
 # Generated outputs (regenerable; contain dataset-derived text/audio, do not redistribute)
 predictions/
 sample_audio/
-SRC/transcripts.jsonl
+transcripts.jsonl
 
 # Personal notes and copyrighted material kept out of the public repo
 considerations.rtf

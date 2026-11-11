@@ -2,241 +2,394 @@
   "split": "test_ood",
   "tag": "whisper-small-lora",
   "n": 871,
-  "wer": 0.286189376443418,
-  "ci": [
-    0.2714180853255937,
-    0.3019548463861399
-  ],
-  "baseline": "whisper-small",
-  "delta": {
-    "point": -0.2723325635103926,
-    "ci": [
-      -0.3033805204105992,
-      -0.24595579203253595
-    ],
-    "n": 871
-  },
   "worst": [
     {
+      "i": 857,
+      "wer": 2.7,
+      "ref": "viet nam seven seven three heavy sydney tower good morning continue approach threshold wind two seven zero degrees seven knots",
+      "hyp": "vietnam seven seven three heavy csa one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one good morning continue approach to the wind two seven zero degrees seven knots"
+    },
+    {
+      "i": 222,
       "wer": 2.0,
       "ref": "wilco",
-      "hyp": "chill go"
+      "hyp": "to ko"
     },
     {
-      "wer": 1.4285714285714286,
-      "ref": "victor oscar roger talk to you later",
-      "hyp": "victor oscar roger roger roger roger roger roger roger roger roger roger ro"
+      "i": 337,
+      "wer": 1.25,
+      "ref": "lufthansa mike which parking",
+      "hyp": "wizz air nine eight which party"
     },
     {
-      "wer": 1.3333333333333333,
+      "i": 787,
+      "wer": 1.1666666666666667,
+      "ref": "jetstar seven sixty three sydney to",
+      "hyp": "csa seven three six three easy eight eight eight"
+    },
+    {
+      "i": 265,
+      "wer": 1.1428571428571428,
+      "ref": "number one report final hotel echo xray",
+      "hyp": "one one four five no say the correct number"
+    },
+    {
+      "i": 834,
+      "wer": 1.125,
+      "ref": "qantas seventy five twenty eight heavy sydney tower",
+      "hyp": "five seven eight five three eight here we descend eight seven"
+    },
+    {
+      "i": 393,
+      "wer": 1.0,
       "ref": "berne tower hello again helicopter hotel bravo zulu whiskey juliet uttigen two thousand three hundred",
-      "hyp": "praha hello lufthansa two lufthansa two lufthansa two lufthansa two lufthansa two lufthansa two lufthansa two lufthansa two lufthansa two lufth"
+      "hyp": "tower hello german control two two two two two two two two two two two two two"
     },
     {
-      "wer": 1.1666666666666667,
-      "ref": "report on final bramois hotel yankee",
-      "hyp": "three four five one more ready to"
-    },
-    {
-      "wer": 1.1666666666666667,
-      "ref": "departure rex sixty eight sixty eight",
-      "hyp": "to patriss rec six two eight six two"
-    },
-    {
-      "wer": 1.0833333333333333,
-      "ref": "ok we won t see company quickly to refound no problem technic",
-      "hyp": "pac air we ll ask you company three three five no problem as any say thank you"
-    },
-    {
-      "wer": 1.0,
-      "ref": "air france one zero eight zulu",
-      "hyp": "lufthansa two"
-    },
-    {
-      "wer": 1.0,
-      "ref": "hotel xray",
-      "hyp": "six five"
-    },
-    {
+      "i": 183,
       "wer": 1.0,
       "ref": "hotel bravo golf kilo echo one four thousand feet",
-      "hyp": "one five thousand or more seven hundred"
+      "hyp": "praha sierra golf kilo direct to golf one five thousand four thousand seven hundred"
     },
     {
+      "i": 456,
       "wer": 1.0,
-      "ref": "thank you very much hotel papa mike",
-      "hyp": "two five one"
+      "ref": "hotel oscar yankee request orbit to the right for spacing",
+      "hyp": "in the request and what we put right four five six"
     },
     {
+      "i": 858,
       "wer": 1.0,
-      "ref": "affirmatif montana",
-      "hyp": "bocadam"
+      "ref": "runway three four left cleared to land vacate bravo three jetstar five twenty",
+      "hyp": "one nine three four let s request a little bit of a bravo three two thousand one twenty"
     },
     {
+      "i": 531,
       "wer": 1.0,
-      "ref": "merci au plaisir aurevoir",
-      "hyp": "fuse"
+      "ref": "helicopter in sight shall we proceed normally hotel golf oscar",
+      "hyp": "hello cuf turn right at charlie just proceed normally out of alf oscar"
+    },
+    {
+      "i": 395,
+      "wer": 1.0,
+      "ref": "hotel golf papa leaving ctr direction november",
+      "hyp": "direct to"
     }
   ],
   "callsign_misses": {
-    "count": 559,
-    "covered": 836,
+    "count": 502,
+    "covered": 716,
     "examples": [
       {
+        "i": 768,
         "gold": [
-          "oscar",
-          "kilo",
-          "foxtrot",
-          "alpha",
-          "oscar"
+          "slovak",
+          "government",
+          "zero",
+          "zero",
+          "four"
         ],
         "guess": [
-          "o",
-          "kilo",
-          "foxtrot",
-          "alpha",
-          "oscar"
+          "german",
+          "zero",
+          "zero",
+          "four"
         ]
       },
       {
+        "i": 398,
+        "gold": [
+          "hotel",
+          "bravo",
+          "kilo",
+          "golf",
+          "november"
+        ],
+        "guess": [
+          "prague",
+          "kilo",
+          "golf",
+          "november"
+        ]
+      },
+      {
+        "i": 505,
+        "gold": [
+          "hotel",
+          "bravo",
+          "charlie",
+          "juliet"
+        ],
+        "guess": [
+          "hapag",
+          "lloyd",
+          "charlie",
+          "juliet"
+        ]
+      },
+      {
+        "i": 392,
+        "gold": [
+          "hotel",
+          "quebec",
+          "juliet"
+        ],
+        "guess": [
+          "quebec",
+          "juliet"
+        ]
+      },
+      {
+        "i": 56,
         "gold": [
           "oscar",
           "kilo",
+          "kilo",
           "echo",
-          "lima",
           "alpha"
         ],
         "guess": [
-          "o",
-          "kilo",
+          "oscar",
+          "kilo"
+        ]
+      },
+      {
+        "i": 552,
+        "gold": [
+          "heli",
+          "tango",
+          "whiskey"
+        ],
+        "guess": [
+          "alitalia",
+          "tango",
+          "whiskey"
+        ]
+      },
+      {
+        "i": 697,
+        "gold": [
+          "top",
+          "jet",
+          "four",
+          "zero",
+          "one"
+        ],
+        "guess": [
+          "czech",
+          "air",
+          "four",
+          "zero",
+          "one"
+        ]
+      },
+      {
+        "i": 614,
+        "gold": [
           "echo",
-          "lima",
-          "alpha"
-        ]
-      },
-      {
-        "gold": [
-          "oscar",
-          "kilo"
+          "one",
+          "charlie"
         ],
         "guess": [
-          "o",
-          "kilo"
+          "alcar",
+          "one",
+          "charlie"
         ]
       },
       {
+        "i": 332,
         "gold": [
-          "oscar",
-          "kilo",
-          "hotel",
-          "hotel",
-          "hotel"
+          "nav",
+          "checker",
+          "five",
+          "one",
+          "one"
         ],
         "guess": [
-          "o",
-          "kilo",
-          "hotel",
-          "hotel"
+          "lufthansa",
+          "seven",
+          "one"
         ]
       },
       {
+        "i": 709,
         "gold": [
-          "roger",
-          "thank"
+          "tatra",
+          "six",
+          "one",
+          "three"
         ],
         "guess": [
-          "thank",
-          "you"
+          "tas",
+          "tra",
+          "six",
+          "one",
+          "three"
         ]
       },
       {
+        "i": 695,
         "gold": [
           "euro",
-          "wings",
+          "trans",
           "one",
-          "tango",
-          "kilo"
+          "three",
+          "juliet"
         ],
         "guess": [
-          "eurobing",
+          "air",
+          "trans",
           "one",
-          "tango",
-          "kilo"
+          "three",
+          "juliet"
         ]
       },
       {
+        "i": 523,
         "gold": [
-          "unfortunately",
-          "with"
+          "riga",
+          "quebec",
+          "lima"
         ],
         "guess": [
-          "fortunately",
-          "with"
+          "vega",
+          "quebec",
+          "lima"
         ]
-      },
+      }
+    ]
+  },
+  "false_alarms": {
+    "count": 36,
+    "uncovered": 155,
+    "examples": [
       {
-        "gold": [
-          "warsaw",
-          "radar"
-        ],
+        "i": 611,
+        "ref": "swiss air force five two one tower grutzi and runway three four and taxi left via lima holding point runway one zero",
         "guess": [
-          "vlm",
-          "radar"
+          "holding",
+          "point",
+          "romeo",
+          "one",
+          "zero"
         ]
       },
       {
-        "gold": [
-          "oscar",
-          "kilo",
-          "charlie",
-          "alpha",
-          "papa"
-        ],
+        "i": 53,
+        "ref": "dobry den csa one delta zulu ruzyne tower runway two four cleared to land wind two two zero degrees one four knots",
         "guess": [
-          "oscar",
-          "echo",
-          "charlie",
-          "alpha",
-          "papa"
+          "csa",
+          "one",
+          "delta",
+          "zulu"
         ]
       },
       {
-        "gold": [
-          "squawk",
+        "i": 649,
+        "ref": "roger then taxi via all alpha and echo on taxiway echo hold short runway one zero",
+        "guess": [
+          "then",
+          "taxiway",
+          "alpha"
+        ]
+      },
+      {
+        "i": 737,
+        "ref": "stefanik tower dobry den elite jet eight zero one crossing two right base runway one three",
+        "guess": [
+          "csa",
+          "eight",
+          "zero",
+          "one"
+        ]
+      },
+      {
+        "i": 685,
+        "ref": "royal air maroc three five two contact apron one two one point eight five five good bye",
+        "guess": [
+          "lima"
+        ]
+      },
+      {
+        "i": 767,
+        "ref": "our stand information lima one zero zero seven ready for startup clearance destination kosice",
+        "guess": [
+          "aero",
+          "flot",
+          "one",
+          "zero",
+          "zero",
           "seven"
-        ],
-        "guess": [
-          "coq",
-          "lufthansa",
-          "two"
         ]
       },
       {
-        "gold": [
-          "oscar",
-          "kilo",
-          "echo",
-          "lima",
-          "alpha"
-        ],
+        "i": 278,
+        "ref": "sion tower bonjour b air nine five now establish on the ils runway two five",
         "guess": [
-          "kilo",
-          "echo",
-          "lima",
-          "alpha"
+          "bonjour",
+          "pier",
+          "nine",
+          "five",
+          "one"
         ]
       },
       {
-        "gold": [
-          "oscar",
-          "uniform",
-          "romeo"
-        ],
+        "i": 143,
+        "ref": "and sion tower the hotel xray quebec we just continue toward the grande dixence",
         "guess": [
-          "square",
-          "uniform",
-          "romeo"
+          "hansa",
+          "sierra"
         ]
+      },
+      {
+        "i": 648,
+        "ref": "royal air maroc three five two zurich tower good afternoon line up runway one zero report ready",
+        "guess": [
+          "lima",
+          "three",
+          "five",
+          "two",
+          "zero"
+        ]
+      },
+      {
+        "i": 28,
+        "ref": "one three four five six zero time air six nine zero juliet bye diky",
+        "guess": [
+          "time",
+          "air",
+          "six",
+          "nine",
+          "zero",
+          "juliet"
+        ]
+      },
+      {
+        "i": 780,
+        "ref": "tower connie eight thirty five on the ils one six three",
+        "guess": [
+          "turkani",
+          "eight"
+        ]
+      },
+      {
+        "i": 840,
+        "ref": "one six right cleared to land and understood qantas four ninety eight",
+        "guess": [
+          "quinoa",
+          "four",
+          "nine",
+          "eight"
+        ]
+      }
+    ]
+  },
+  "repetitions": {
+    "count": 1,
+    "examples": [
+      {
+        "i": 857,
+        "hyp": "vietnam seven seven three heavy csa one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one one good morning continue approach to the wind two seven zero degrees seven knots"
       }
     ]
   }

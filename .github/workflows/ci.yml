@@ -26,8 +26,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install tooling
-        run: pip install --quiet ruff nbformat pytest jiwer numpy
+      - name: Install dependencies
+        run: |
+          torch=$(grep -E '^torch==' requirements.txt)
+          pip install --quiet "$torch" --index-url https://download.pytorch.org/whl/cpu
+          pip install --quiet -r requirements.txt
 
       - name: Lint for errors (blocking)
         run: ruff check --select E9,F63,F7,F82 --output-format=github .

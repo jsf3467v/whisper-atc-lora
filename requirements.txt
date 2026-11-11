@@ -21,4 +21,6 @@ jupyterlab==4.5.10
 # Demo / serving
 gradio==6.16.0
 
-numpy
+# Testing and linting
+pytest==9.2.0
+ruff==0.17.4

@@ -1,9 +1,5 @@
-"""Shared audio decode for the ATC pipeline.
+"""Shared audio decoding, free of model dependencies, used by every stage to read waveforms identically."""
 
-One soundfile + scipy decoder, reused by training, inference, evaluation, and the
-EDA so every stage reads waveforms identically. Deliberately free of any model
-dependency, which keeps lightweight callers such as the EDA off torch.
-"""
 from __future__ import annotations
 
 import io
@@ -13,11 +9,15 @@ import soundfile as sf
 from scipy.signal import resample_poly
 
 TARGET_SR = 16_000
+AUDIO_EXT = (".wav", ".flac", ".ogg", ".mp3", ".aif", ".aiff")
+
+
+def handle(item):
+    return io.BytesIO(item["bytes"]) if item.get("bytes") else item["path"]
 
 
 def waveform(item):
-    src = io.BytesIO(item["bytes"]) if item.get("bytes") else item["path"]
-    audio, sr = sf.read(src, dtype="float32")
+    audio, sr = sf.read(handle(item), dtype="float32")
     if audio.ndim > 1:
         audio = audio.mean(axis=1)
     if sr != TARGET_SR:

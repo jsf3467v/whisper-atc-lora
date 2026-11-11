@@ -1,98 +1,77 @@
-"""OOD error analysis. Reads predictions/<split>-<tag>.jsonl, reports corpus WER
-with a 95% CI, the paired WER change over a baseline, and the worst utterances and
-callsign misses behind the numbers. Uses the shared scorer, so figures match
-evaluate.py. Writes JSON plus a compact console summary.
-
-    python error_analysis.py [split] [tag] [baseline] [worst_k]
-    # defaults: test_ood  whisper-small-lora  whisper-small  12
-"""
+"""Worst utterances, callsign misses, false alarms, and repeated output for one split and model."""
 
 import json
 import sys
 
-import numpy as np
+from scoring import METRICS, extracted, predictions, root, statistics
 
-from scoring import callsign, count, delta, interval, predictions, root, wer
+from data import OOD  # isort: skip
 
-from normalize import normalize
+WER, REPETITION = METRICS.index("wer"), METRICS.index("repetition")
 
 
 def rows(recs):
-    out = []
-    for r in recs:
-        edits, reflen = count(r["ref"], r["hyp"])
-        if not reflen:
-            continue
-        out.append({"i": r.get("i"), "ref": normalize(r["ref"]), "hyp": normalize(r["hyp"]),
-                    "edits": edits, "reflen": reflen, "wer": edits / reflen,
-                    "gold": callsign(r["ref"]), "guess": callsign(r["hyp"])})
-    return out
-
-
-def arrays(rs):
-    return (np.array([r["edits"] for r in rs], dtype=np.int64),
-            np.array([r["reflen"] for r in rs], dtype=np.int64))
-
-
-def matched(rows_a, rows_b):
-    a = {r["i"]: r for r in rows_a if r["i"] is not None}
-    b = {r["i"]: r for r in rows_b if r["i"] is not None}
-    keys = sorted(set(a) & set(b))
-    ea, na = arrays([a[k] for k in keys])
-    eb, nb = arrays([b[k] for k in keys])
-    return ea, na, eb, nb, len(keys)
+    num, den, kept, texts = statistics([r["ref"] for r in recs], [r["hyp"] for r in recs])
+    return [
+        {
+            "i": recs[pos]["i"],
+            "ref": ref,
+            "hyp": hyp,
+            "wer": num[k, WER] / den[k, WER],
+            "repeated": bool(num[k, REPETITION]),
+            "gold": extracted(ref.split()),
+            "guess": extracted(hyp.split()),
+        }
+        for k, (pos, (ref, hyp)) in enumerate(zip(kept, texts, strict=True))
+    ]
 
 
 def worst(rs, k):
-    top = sorted(rs, key=lambda r: r["wer"], reverse=True)[:k]
-    return [{"wer": r["wer"], "ref": r["ref"], "hyp": r["hyp"]} for r in top]
+    ranked = sorted(rs, key=lambda r: r["wer"], reverse=True)[:k]
+    return [{key: r[key] for key in ("i", "wer", "ref", "hyp")} for r in ranked]
 
 
 def misses(rs, k):
     bad = [r for r in rs if r["gold"] and r["gold"] != r["guess"]]
-    return {"count": len(bad), "covered": sum(1 for r in rs if r["gold"]),
-            "examples": [{"gold": r["gold"], "guess": r["guess"]} for r in bad[:k]]}
+    examples = [{"i": r["i"], "gold": r["gold"], "guess": r["guess"]} for r in bad[:k]]
+    return {"count": len(bad), "covered": sum(bool(r["gold"]) for r in rs), "examples": examples}
 
 
-def analysis(split, tag, baseline, worst_k):
+def alarms(rs, k):
+    hits = [r for r in rs if r["guess"] and not r["gold"]]
+    examples = [{"i": r["i"], "ref": r["ref"], "guess": r["guess"]} for r in hits[:k]]
+    return {"count": len(hits), "uncovered": sum(not r["gold"] for r in rs), "examples": examples}
+
+
+def repeats(rs, k):
+    hits = [r for r in rs if r["repeated"]]
+    return {"count": len(hits), "examples": [{"i": r["i"], "hyp": r["hyp"]} for r in hits[:k]]}
+
+
+def report(tag, split=OOD, worst_k=12):
     rs = rows(predictions(split, tag))
-    edits, reflen = arrays(rs)
-    point, lo, hi = interval(edits, reflen)
-    result = {"split": split, "tag": tag, "n": len(rs), "wer": point, "ci": [lo, hi],
-              "baseline": None, "delta": None}
-    try:
-        base = rows(predictions(split, baseline))
-    except FileNotFoundError:
-        base = None
-    if base:
-        ea, na, eb, nb, m = matched(base, rs)
-        if m:
-            dp, dlo, dhi = delta(ea, na, eb, nb)
-            result["baseline"] = baseline
-            result["delta"] = {"point": dp, "ci": [dlo, dhi], "n": m}
-    result["worst"] = worst(rs, worst_k)
-    result["callsign_misses"] = misses(rs, worst_k)
-    return result
-
-
-def summary(result):
-    print(f"\n{result['split']} | {result['tag']} (n={result['n']}, 10k bootstrap)\n")
-    print(f"  wer {result['wer']:.3f}  95% ci [{result['ci'][0]:.3f}, {result['ci'][1]:.3f}]")
-    d = result["delta"]
-    if d:
-        print(f"  vs {result['baseline']}: {d['point']:+.3f}  "
-              f"95% ci [{d['ci'][0]:+.3f}, {d['ci'][1]:+.3f}]  (paired n={d['n']}; below 0 = better)")
-
-
-def report(split="test_ood", tag="whisper-small-lora", baseline="whisper-small", worst_k=12):
-    result = analysis(split, tag, baseline, worst_k)
+    k = int(worst_k)
+    result = {
+        "split": split,
+        "tag": tag,
+        "n": len(rs),
+        "worst": worst(rs, k),
+        "callsign_misses": misses(rs, k),
+        "false_alarms": alarms(rs, k),
+        "repetitions": repeats(rs, k),
+    }
     out = root / "results" / f"error-{split}-{tag}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2))
-    summary(result)
-    print(f"\nwrote {out.relative_to(root)}")
+    m, a, r = result["callsign_misses"], result["false_alarms"], result["repetitions"]
+    print(
+        f"{split} | {tag} | n={len(rs)} | callsign misses {m['count']} of {m['covered']} "
+        f"| false alarms {a['count']} of {a['uncovered']} | repeated outputs {r['count']}"
+    )
+    print(f"wrote {out.relative_to(root)}")
 
 
 if __name__ == "__main__":
-    a = sys.argv[1:]
-    report(*a[:3], *([int(a[3])] if len(a) > 3 else []))
+    if len(sys.argv) < 2:
+        raise SystemExit("usage: python Evaluation/error_analysis.py <tag> [split] [worst_k]")
+    report(*sys.argv[1:4])
